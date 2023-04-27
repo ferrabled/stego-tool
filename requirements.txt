@@ -1,6 +1,3 @@
-cv2
-random
+opencv-python
 argparse
-hashlib
-base64
 PyCryptodome
