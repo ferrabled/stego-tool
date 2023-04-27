@@ -1,0 +1,6 @@
+cv2
+random
+argparse
+hashlib
+base64
+PyCryptodome
