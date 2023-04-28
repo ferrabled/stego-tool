@@ -20,8 +20,10 @@ def addPositions(image, pixel_num, number_to_add):
 	return new_pixel_num, new_width, new_height
 
 
-
 def encode(filename, out_filename, plaintext_password):
+	if(is_correct_extension(filename, 'image') == False):
+		print("The filename is not correct. The image must be .png!")
+		exit(1)
 	image = cv2.imread(filename)
 
 	# hacemos que el pixel en el que iniciar esté en el 
@@ -65,8 +67,8 @@ def encode(filename, out_filename, plaintext_password):
 		current_pixel, current_width, current_height = addPositions(image, current_pixel, jump)
 		index += 1
 
-	while(out_filename == ''):
-		out_filename = input('Introduce the name of the output image (with extension): ')
+	while(is_correct_extension(out_filename, 'image') == False):
+		out_filename = input('Introduce the name of the output image (must be .png): ')
 	cv2.imwrite(out_filename, image)
 
 
@@ -93,7 +95,6 @@ def decode(filename, initial_pixel_num, plaintext_password):
 		message += chr(pixel[2])
 		jump = pixel[0] if pixel[0] != 0 else 100
 		current_pixel, current_width, current_height = addPositions(image, current_pixel, jump)
-		#todo: comprobar si se ha llegado al final de la imagen
 
 	message = message[:-3]
 	
@@ -111,6 +112,20 @@ def decode(filename, initial_pixel_num, plaintext_password):
 		exit(1)
 
 	print('The message is: ' + plaintext)
+
+
+def is_correct_extension(filename, type_of_file):
+	if(filename == ''):
+		return False
+	import os.path
+	extension = os.path.splitext(filename)[1][1:]
+	if(type_of_file == 'image' and extension in ['png']):
+		return True
+	if(type_of_file == 'video' and extension in ['avi']):
+		return True
+	if(type_of_file == 'audio' and extension in ['mp3', 'wav']):
+		return True
+	return False
 
 
 def main():
