@@ -200,11 +200,6 @@ def encode_audio_mode1(audio_filename, number):
 	random_range = random.randint(0, len(ranges)-1)
 	if(random_range == len(ranges)-1 and random_range != 0):
 		random_range -= 1
-	## TODO
-	print("Ranges")
-	print(ranges)
-	print("Random range")
-	print(random_range)
 	length = len(str(number))
 	final_audio = AudioSegment.silent(duration=length*5)
 	#print('[*] Using range: ' + str(ranges[random_range]))
@@ -246,14 +241,7 @@ def encode_audio_mode1(audio_filename, number):
 	final_audio.export(aux_filename, format="wav")
 
 	start = ranges[random_range][0]
-	## TODO
-	print(start)
-
-	ranges = detect_silence(final_audio, 5, -69.0)
-
-	## TODO
-	print(ranges)
-	
+	ranges = detect_silence(final_audio, 5, -69.0)	
 	
 
 	# We need to import the audio again, due to some errors
@@ -266,10 +254,6 @@ def encode_audio_mode1(audio_filename, number):
 	print("[*] Secret starting at milisecond: "+ str(start+20))
 	print("[*] Audio edited, secret length: " + str(final_audio.duration_seconds*1000))
 	print("[*] Secret finishing in audio at : " + str((start + 20 + final_audio.duration_seconds*1000)) + " miliseconds")
-	## TODO
-	print("TOTAL" + str(audio_final.duration_seconds*1000))
-	print("Duration original" + str(audio_edited.duration_seconds*1000))
-	print("RESTA " + str((audio_edited.duration_seconds*1000) - (audio_end.duration_seconds*1000+40 + audio_start.duration_seconds*1000)))
 	out_filename = audio_filename.replace("_edited", "_stego")
 	audio_final.export(out_filename, format="wav")
 	print("[+] Audio saved succesfully!")
@@ -283,8 +267,6 @@ def decode_audio_mode1(audio_filename):
 
 	# Find the audio chunk, with the 2 ms seconds of silence at the start and end
 	find_silence_range = detect_silence(audio, 18, silence_thresh=-1000000)
-	## TODO
-	print('Found the following ranges: ' + str(find_silence_range))
 	length = find_silence_range[-1][0] - find_silence_range[0][1] 
 	if(find_silence_range[-1][1] - find_silence_range[-1][0] > 20):
 		length += (find_silence_range[-1][1] - find_silence_range[-1][0] - 20)
@@ -299,11 +281,6 @@ def decode_audio_mode1(audio_filename):
 	absolute_silence_range = detect_silence(audio[start_point:start_point+length], 3, silence_thresh=-70)
 	final_number = ''
 
-	## TODO
-	print(length)
-	print(start_point+length)
-	print((absolute_silence_range))
-	
 	for i in range(0, len(absolute_silence_range)):
 		i_range = absolute_silence_range[i]
 		if(i==0 and absolute_silence_range[i][0] >> 0):
@@ -320,10 +297,6 @@ def decode_audio_mode1(audio_filename):
 		if(i == len(absolute_silence_range)-1):
 			n = (length - i_range[1]) / 5
 			final_number += int(round(n))*'1'
-
-	## TODO
-	print(str(length/5))
-	print(len(str(final_number)))
 	
 	print('[*] The final number is:', final_number)
 	initial_pixel = int(final_number, 2)
