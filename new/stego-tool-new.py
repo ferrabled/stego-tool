@@ -161,27 +161,27 @@ def analyze_silences(audio_filename, min_silence_len):
         # As the audio has absolute silence, we can't use it
         # we are going to add some inaudible noise to the audio
         # so we can use it
-        print('[!] Absolute silence found in audio file')
-        print('[*] Adding inaudible noise to the audio file')
+        print('\033[1;31;40m[!] Absolute silence found in audio file\033[0;37;40m')
+        print('\033[1;33;40m[*] Adding inaudible noise to the audio file\033[0;37;40m')
         for value in silence_range:
             start = value[0]
             end = value[1]
             duration = end - start
-            print('[*] Silence duration: ' + str(duration))
+            print('\033[1;33;40m[*] Silence duration: ' + str(duration) + '\033[0;37;40m')
             file_edited = add_noise(file, duration, start)
         file_edited.export(output_file, format="wav")
-        print("[+] Audio changed with white noise")
+        print("\033[1;32;40m[+] Audio changed with white noise\033[0;37;40m")
     else:
-        print('[*] No absolute silence found in audio file')
+        print('\033[1;33;40m[*] No absolute silence found in audio file\033[0;37;40m')
         file_edited.export(output_file, format="wav")
-        print("[+] Audio hasn't been changed")
+        print("\033[1;32;40m[+] Audio hasn't been changed\033[0;37;40m")
     
     # Now we can check the ranges where the silence threshold is under -60 dBFS
     neccessary_silence = min_silence_len*5+40
     ranges = detect_silence(file, neccessary_silence, -60.0)
-    print('[*] Found the following ranges: ' + str(ranges))
+    print('\033[1;33;40m[*] Found the following ranges: ' + str(ranges) + '\033[0;37;40m')
     if(len(ranges) == 0):
-        print('[!] Error. No silence found in audio file, use the mode 2 instead (with -m 2).')
+        print('\033[1;31;40m[!] Error. No silence found in audio file, use the mode 2 instead (with -m 2).\033[0;37;40m')
         remove_folder()
         exit(1)
     return ranges, output_file
@@ -191,23 +191,23 @@ def encode_audio_mode1(audio_filename, number):
 	while(is_correct_extension(audio_filename, 'audio') == False):
 		audio_filename = input("Introduce the filename of the audio (must be .wav): ")
 
-	print('[*] Decimal number to hide:',  number)
+	print('\033[1;33;40m[*] Decimal number to hide:',  number, '\033[0;37;40m')
 	# convertir el mensaje en una lista de cadenas binarias
 	number = decimalToBinary(int(number))
-	print('[*] Binary number to hide:', number)
+	print('\033[1;33;40m[*] Binary number to hide:', number, '\033[0;37;40m')
 
 	ranges, audio_filename = analyze_silences(audio_filename, len(number))
 
 	file = AudioSegment.from_wav(audio_filename)
 
 	# Randomize the range that we will use
-	#print("[*] Found: " + str(len(ranges)) + " ranges")
+	#print("\033[1;33;40m[*] Found: " + str(len(ranges)) + " ranges\033[0;37;40m")
 	random_range = random.randint(0, len(ranges)-1)
 	if(random_range == len(ranges)-1 and random_range != 0):
 		random_range -= 1
 	length = len(str(number))
 	final_audio = AudioSegment.silent(duration=length*5)
-	#print('[*] Using range: ' + str(ranges[random_range]))
+	#print('\033[1;33;40m[*] Using range: ' + str(ranges[random_range]) + '\033[0;37;40m')
 	consequent = 1
 	k = 0
 	# Iterate over the binary number
@@ -256,12 +256,12 @@ def encode_audio_mode1(audio_filename, number):
 	audio_start:AudioSegment = audio_edited[:start]
 	audio_end:AudioSegment = audio_edited[(start+40+final_audio.duration_seconds*1000):]
 	audio_final = audio_start + AudioSegment.silent(duration=20) + final_audio + AudioSegment.silent(duration=20) + audio_end
-	print("[*] Secret starting at milisecond: "+ str(start+20))
-	print("[*] Audio edited, secret length: " + str(final_audio.duration_seconds*1000))
-	print("[*] Secret finishing in audio at : " + str((start + 20 + final_audio.duration_seconds*1000)) + " miliseconds")
+	print("\033[1;33;40m[*] Secret starting at milisecond: "+ str(start+20)+'\033[0;37;40m')
+	print("\033[1;33;40m[*] Audio edited, secret length: " + str(final_audio.duration_seconds*1000)+'\033[0;37;40m')
+	print("\033[1;33;40m[*] Secret finishing in audio at : " + str((start + 20 + final_audio.duration_seconds*1000)) + " miliseconds\033[0;37;40m")
 	out_filename = audio_filename.replace("_edited", "_stego")
 	audio_final.export(out_filename, format="wav")
-	print("[+] Audio saved succesfully!")
+	print("\033[1;32;40m[+] Audio saved succesfully!\033[0;37;40m")
 	
 	return out_filename
 
@@ -303,11 +303,11 @@ def decode_audio_mode1(audio_filename):
             n = (length - i_range[1]) / 5
             final_number += int(round(n))*'1'
     
-    print('[*] The final number is:', final_number)
+    print('\033[1;33;40m[*] The final number is:', final_number, '\033[0;37;40m')
     initial_pixel = int(final_number, 2)
     if(initial_pixel > 1000000000000):
         raise Exception
-    print('[*] The initial pixel is:', initial_pixel)
+    print('\033[1;33;40m[*] The initial pixel is:', initial_pixel, '\033[0;37;40m')
     return initial_pixel
 # --------------------------------------------------------------
 
