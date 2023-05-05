@@ -14,13 +14,12 @@ $> pip3 install -r requirements.txt
 
 3. Install `ffmpeg`:
 
-3.1 On Linux:
+- On Linux:
 ```bash
 $> sudo apt get install ffmpeg
 ```
 
-3.2 On Windows:
-You can follow this manual: https://www.geeksforgeeks.org/how-to-install-ffmpeg-on-windows/
+- On Windows: You can follow [this](https://www.geeksforgeeks.org/how-to-install-ffmpeg-on-windows/) manual
 
 
 ## Usage
