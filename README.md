@@ -44,9 +44,14 @@ $> python3 stego-tool.py -d [-v <input_video_filename>.avi] [-p <password>]
 
 ## Examples
 
-- Hide a message using image1.png and audio1.wav, saving the result on video1.avi with the password "hello"
+- Hide a message using image1.png and audio1.wav with mode 1 (by default), saving the result on video1.avi with the password "hello"
 ```bash
 $> python3 stego-tool.py -e -i image1.png -a audio1.wav -v video1.avi -p "hello"
+```
+
+- The same but using the mode 2
+```bash
+$> python3 stego-tool.py -e -i image1.png -a audio1.wav -v video1.avi -p "hello" -m2
 ```
 
 - Obtain a message from video1.avi using the password "hello"
