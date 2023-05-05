@@ -23,8 +23,8 @@ def addPositions(image, pixel_num, number_to_add):
 
 	# hacemos algunas comprobaciones (para ver que sigue dentro de la imagen)
 	if(new_width >= image.shape[1] or new_height >= image.shape[0]):
-		print('[!] Error. The calculated positions are outside the image.')
-		#remove_folder()
+		print('\033[1;31;40m[!] Error. The calculated positions are outside the image.\033[0;37;40m')
+		remove_folder()
 		exit(1)
 
 	return new_pixel_num, new_width, new_height
@@ -35,13 +35,18 @@ def encode_image(filename, plaintext_password):
 	image = cv2.imread(filename)
 	
 	# we save the original image like BGR to use later
-	aux_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+	try:
+		aux_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+	except:
+		print("\033[1;31;40m[!] The image cannot be black and white.\033[0;37;40m")
+		remove_folder()
+		exit(1)
 	cv2.imwrite("./" + FOLDER_NAME + "/" + os.path.splitext(filename)[0] + "_bgr.png", aux_image)
 
 	# hacemos que el pixel en el que iniciar esté en el 
 	# primer cuarto de imagen (para dejar espacio para el mensaje)
 	initial_pixel_num = random.randrange(1, image.shape[0] * image.shape[1] // 10, 1)
-	print('[*] The initial pixel number is: ' + str(initial_pixel_num))
+	print('\033[1;33;40m[*] The initial pixel number is: ' + str(initial_pixel_num) + '\033[0;37;40m')
 	_, current_width, current_height = addPositions(image, initial_pixel_num, 0)
 
 	# introducir la password
@@ -67,7 +72,7 @@ def encode_image(filename, plaintext_password):
 
 	# calcular si se puede meter todo el mensaje (vemos el peor de los casos)
 	if((initial_pixel_num + len(message) * 256) >= (image.shape[0] * image.shape[1])):
-		print('[!] The message entered is too large to store in this image!')
+		print('\033[1;31;40m[!] The message entered is too large to store in this image!\033[0;37;40m')
 		remove_folder()
 		exit(1)
 
@@ -125,11 +130,11 @@ def decode_image(filename, initial_pixel_num, plaintext_password):
 	try:
 		plaintext = cipher.decrypt_and_verify(ciphertext, tag).decode("utf-8")
 	except:
-		print('[!] The password is NOT correct!')
+		print('\033[1;31;40m[!] The password is NOT correct!\033[0;37;40m')
 		remove_folder()
 		exit(1)
 
-	print('[+] The message is: ' + plaintext)
+	print('\033[1;32;40m[+] The message is: ' + plaintext + '\033[0;37;40m')
 
 # -----------------------------------------------------
 
@@ -145,64 +150,66 @@ def add_noise(file:AudioSegment, duration, start):
 
 
 def analyze_silences(audio_filename, min_silence_len):
-	file = AudioSegment.from_wav(audio_filename)
-	file_edited = file
+    file = AudioSegment.from_wav(audio_filename)
+    file_edited = file
 
-	output_file = "./" + FOLDER_NAME + "/" + os.path.splitext(audio_filename)[0] + "_edited.wav"
+    output_file = "./" + FOLDER_NAME + "/" + os.path.splitext(audio_filename)[0] + "_edited.wav"
 
-	# First check that our audio file does not have any absolute silence
-	silence_range = detect_silence(file, 3, silence_thresh=-100000000)
-	if len(silence_range) > 0:
-		# As the audio has absolute silence, we can't use it
-		# we are going to add some inaudible noise to the audio
-		# so we can use it
-		print('[!] Absolute silence found in audio file')
-		print('[*] Adding inaudible noise to the audio file')
-		for value in silence_range:
-			start = value[0]
-			end = value[1]
-			duration = end - start
-			print('[*] Silence duration: ' + str(duration))
-			file_edited = add_noise(file, duration, start)
-		file_edited.export(output_file, format="wav")
-		print("[+] Audio changed with white noise")
-	else:
-		print('[*] No absolute silence found in audio file')
-		file_edited.export(output_file, format="wav")
-		print("[+] Audio hasn't been changed")
-	
-	# Now we can check the ranges where the silence threshold is under -60 dBFS
-	neccessary_silence = min_silence_len*5+40
-	ranges = detect_silence(file, neccessary_silence, -60.0)
-	print('[*] Found the following ranges: ' + str(ranges))
-	if(len(ranges) == 0):
-		print('[!] Error. No silence found in audio file, use the mode 2 instead (with -m 2).')
-		remove_folder()
-		exit(1)
-	return ranges, output_file
+    # First check that our audio file does not have any absolute silence
+    silence_range = detect_silence(file, 3, silence_thresh=-100000000)
+    if len(silence_range) > 0:
+        # As the audio has absolute silence, we can't use it
+        # we are going to add some inaudible noise to the audio
+        # so we can use it
+        print('\033[1;31;40m[!] Absolute silence found in audio file\033[0;37;40m')
+        print('\033[1;33;40m[*] Adding inaudible noise to the audio file\033[0;37;40m')
+        for value in silence_range:
+            start = value[0]
+            end = value[1]
+            duration = end - start
+            print('\033[1;33;40m[*] Silence duration: ' + str(duration) + '\033[0;37;40m')
+            file_edited = add_noise(file, duration, start)
+        file_edited.export(output_file, format="wav")
+        print("\033[1;32;40m[+] Audio changed with white noise\033[0;37;40m")
+    else:
+        print('\033[1;33;40m[*] No absolute silence found in audio file\033[0;37;40m')
+        file_edited.export(output_file, format="wav")
+        print("\033[1;32;40m[+] Audio hasn't been changed\033[0;37;40m")
+    
+    # Now we can check the ranges where the silence threshold is under -60 dBFS
+    neccessary_silence = min_silence_len*5+40
+    ranges = detect_silence(file, neccessary_silence, -60.0)
+    print('\033[1;33;40m[*] Found the following ranges: ' + str(ranges) + '\033[0;37;40m')
+    if(len(ranges) == 0):
+        print('\033[1;31;40m[!] Error. No silence found in audio file, use the mode 2 instead (with -m 2).\033[0;37;40m')
+        remove_folder()
+        exit(1)
+    return ranges, output_file
 
 
 def encode_audio_mode1(audio_filename, number):
 	while(is_correct_extension(audio_filename, 'audio') == False):
 		audio_filename = input("Introduce the filename of the audio (must be .wav): ")
 
-	print('[*] Decimal number to hide:',  number)
+	print('\033[1;33;40m[*] Decimal number to hide:',  number, '\033[0;37;40m')
 	# convertir el mensaje en una lista de cadenas binarias
 	number = decimalToBinary(int(number))
-	print('[*] Binary number to hide:', number)
+	print('\033[1;33;40m[*] Binary number to hide:', number, '\033[0;37;40m')
 
 	ranges, audio_filename = analyze_silences(audio_filename, len(number))
 
 	file = AudioSegment.from_wav(audio_filename)
 
 	# Randomize the range that we will use
-	#print("[*] Found: " + str(len(ranges)) + " ranges")
+	#print("\033[1;33;40m[*] Found: " + str(len(ranges)) + " ranges\033[0;37;40m")
 	random_range = random.randint(0, len(ranges)-1)
 	if(random_range == len(ranges)-1 and random_range != 0):
 		random_range -= 1
+	if(ranges[random_range][0] == 0):
+		random_range += 1
 	length = len(str(number))
 	final_audio = AudioSegment.silent(duration=length*5)
-	#print('[*] Using range: ' + str(ranges[random_range]))
+	#print('\033[1;33;40m[*] Using range: ' + str(ranges[random_range]) + '\033[0;37;40m')
 	consequent = 1
 	k = 0
 	# Iterate over the binary number
@@ -251,59 +258,62 @@ def encode_audio_mode1(audio_filename, number):
 	audio_start:AudioSegment = audio_edited[:start]
 	audio_end:AudioSegment = audio_edited[(start+40+final_audio.duration_seconds*1000):]
 	audio_final = audio_start + AudioSegment.silent(duration=20) + final_audio + AudioSegment.silent(duration=20) + audio_end
-	print("[*] Secret starting at milisecond: "+ str(start+20))
-	print("[*] Audio edited, secret length: " + str(final_audio.duration_seconds*1000))
-	print("[*] Secret finishing in audio at : " + str((start + 20 + final_audio.duration_seconds*1000)) + " miliseconds")
+	print("\033[1;33;40m[*] Secret starting at milisecond: "+ str(start+20)+'\033[0;37;40m')
+	print("\033[1;33;40m[*] Audio edited, secret length: " + str(final_audio.duration_seconds*1000)+'\033[0;37;40m')
+	print("\033[1;33;40m[*] Secret finishing in audio at : " + str((start + 20 + final_audio.duration_seconds*1000)) + " miliseconds\033[0;37;40m")
 	out_filename = audio_filename.replace("_edited", "_stego")
 	audio_final.export(out_filename, format="wav")
-	print("[+] Audio saved succesfully!")
+	print("\033[1;32;40m[+] Audio saved succesfully!\033[0;37;40m")
 	
 	return out_filename
 
 
 def decode_audio_mode1(audio_filename):
-	audio_filename = audio_filename.replace("_mode2", "_mode1")
-	audio = AudioSegment.from_wav(audio_filename)
+    audio_filename = audio_filename.replace("_mode2", "_mode1")
+    audio = AudioSegment.from_wav(audio_filename)
 
-	# Find the audio chunk, with the 2 ms seconds of silence at the start and end
-	find_silence_range = detect_silence(audio, 18, silence_thresh=-1000000)
-	length = find_silence_range[-1][0] - find_silence_range[0][1] 
-	if(find_silence_range[-1][1] - find_silence_range[-1][0] > 20):
-		length += (find_silence_range[-1][1] - find_silence_range[-1][0] - 20)
-	
-	# Once when we have the audio chunk with the secret, we need to retrieve it
-	# We will use the same method as before, but in reverse
-	# We will check the silence and the noise
+    # Find the audio chunk, with the 2 ms seconds of silence at the start and end
+    find_silence_range = detect_silence(audio, 18, silence_thresh=-1000000)
+    if(find_silence_range[0][0] == 0):
+        find_silence_range.pop(0)
 
-	start_point = find_silence_range[0][1]
-	
-	
-	absolute_silence_range = detect_silence(audio[start_point:start_point+length], 3, silence_thresh=-70)
-	final_number = ''
+    length = find_silence_range[-1][0] - find_silence_range[0][1] 
+    if(find_silence_range[-1][1] - find_silence_range[-1][0] > 20):
+        length += (find_silence_range[-1][1] - find_silence_range[-1][0] - 20)
+    
+    # Once when we have the audio chunk with the secret, we need to retrieve it
+    # We will use the same method as before, but in reverse
+    # We will check the silence and the noise
 
-	for i in range(0, len(absolute_silence_range)):
-		i_range = absolute_silence_range[i]
-		if(i==0 and absolute_silence_range[i][0] >> 0):
-			n = i_range[0] / 5
-			final_number += int(round(n))*'1'
+    start_point = find_silence_range[0][1]
+    
+    
+    absolute_silence_range = detect_silence(audio[start_point:start_point+length], 3, silence_thresh=-70)
+    final_number = ''
 
-		if(i >> 0):
-			sum = (i_range[0] -  absolute_silence_range[i-1][1])  / 5
-			final_number += int(round(sum))*'1'
+    for i in range(0, len(absolute_silence_range)):
+        i_range = absolute_silence_range[i]
+        if(i==0 and absolute_silence_range[i][0] >> 0):
+            n = i_range[0] / 5
+            final_number += int(round(n))*'1'
 
-		n = (i_range[1] - i_range[0]) / 5
-		final_number += int(round(n))*'0'
+        if(i >> 0):
+            sum = (i_range[0] -  absolute_silence_range[i-1][1])  / 5
+            final_number += int(round(sum))*'1'
 
-		if(i == len(absolute_silence_range)-1):
-			n = (length - i_range[1]) / 5
-			final_number += int(round(n))*'1'
-	
-	print('[*] The final number is:', final_number)
-	initial_pixel = int(final_number, 2)
-	if(initial_pixel > 1000000000000):
-		raise Exception
-	print('[*] The initial pixel is:', initial_pixel)
-	return initial_pixel
+        n = (i_range[1] - i_range[0]) / 5
+        final_number += int(round(n))*'0'
+
+        if(i == len(absolute_silence_range)-1):
+            n = (length - i_range[1]) / 5
+            final_number += int(round(n))*'1'
+    
+    print('\033[1;33;40m[*] The final number is:', final_number, '\033[0;37;40m')
+    initial_pixel = int(final_number, 2)
+    if(initial_pixel > 1000000000000):
+        raise Exception
+    print('\033[1;33;40m[*] The initial pixel is:', initial_pixel, '\033[0;37;40m')
+    return initial_pixel
 # --------------------------------------------------------------
 
 
@@ -327,10 +337,10 @@ def encode_audio_mode2(audio_file, message):
 	while(is_correct_extension(audio_file, 'audio') == False):
 		audio_file = input("Introduce the filename of the audio (must be .wav): ")
 
-	print('[+] Decimal number to hide:',  message)
+	print('\033[1;32;40m[+] Decimal number to hide:',  message, '\033[0;37;40m')
 	# convertir el mensaje en una lista de cadenas binarias
 	binary_message = decimalToBinary(int(message))
-	print('[*] Binary number to hide:', binary_message)
+	print('\033[1;33;40m[*] Binary number to hide:', binary_message, '\033[0;37;40m')
 
 	# cargar el archivo de audio
 	audio = AudioSegment.from_file(audio_file, format="wav")
@@ -353,7 +363,7 @@ def encode_audio_mode2(audio_file, message):
 	# guardar el archivo con el mensaje oculto
 	output_file = "./" + FOLDER_NAME + "/" + os.path.splitext(audio_file)[0] + "_stego.wav"
 	audio.export(output_file, format="wav")
-	print("[+] Audio saved succesfully!")
+	print("\033[1;32;40m[+] Audio saved succesfully!\033[0;37;40m")
 
 	return output_file
 
@@ -384,7 +394,7 @@ def decode_audio_mode2(audio_file):
 	#binary_number = ''.join(['1' if i in [4, 5, 6] else '0' if i in [1, 2, 3] else '-' for i in new_diferencias])
 	
 	result = int(binary_number, 2)
-	print('[*] The initial pixel is:', result)
+	print('\033[1;33;40m[*] The initial pixel is:', result, '\033[0;37;40m')
 	return result
 # --------------------------------------------------------------
 
@@ -395,7 +405,7 @@ def create_video(image_filename, audio_filename, video_filename, mode):
 	from moviepy.editor import AudioFileClip, ImageClip, concatenate_videoclips, CompositeVideoClip
 	
 	while(is_correct_extension(video_filename, 'video') == False):
-		print("[!] The filename is not correct. The video must be .avi!")
+		print("\033[1;31;40m[!] The filename is not correct. The video must be .avi!\033[0;37;40m")
 		video_filename = input("Introduce the filename of the output video: ")
 
 	original_image = image_filename.replace("_stego", "_bgr")
@@ -415,12 +425,13 @@ def create_video(image_filename, audio_filename, video_filename, mode):
 	# set the FPS to 1
 	video_clip.fps = 1
 	# export the video (in rawvideo format)
-	#if mode == 1:
-	#	video_clip.write_videofile(video_filename, codec="rawvideo", audio_codec="pcm_s16le", audio_fps=48000, audio_bitrate="768k", ffmpeg_params=["-ac", "1"])
-	#else:
-	video_clip.write_videofile(video_filename, codec="rawvideo", audio_codec="pcm_s16le")
+	# TODO: mirar si borra todo esto del modo
+	if mode == 1:
+		video_clip.write_videofile(video_filename, codec="rawvideo", audio_codec="pcm_s16le", audio_fps=48000, audio_bitrate="768k", ffmpeg_params=["-ac", "1"])
+	else:
+		video_clip.write_videofile(video_filename, codec="rawvideo", audio_codec="pcm_s16le")
 
-	print("[+] The video with the hidden message has been created: " + video_filename)
+	print("\033[1;32;40m[+] The video with the hidden message has been created: " + video_filename + '\033[0;37;40m')
 
 
 def get_frame(video_filename, audio_duration):
@@ -428,7 +439,7 @@ def get_frame(video_filename, audio_duration):
 	try:
 		cam = cv2.VideoCapture(video_filename)
 	except:
-		print("[!] Error: File not found (" + video_filename + ")!")
+		print("\033[1;31;40m[!] Error: File not found (" + video_filename + ")!\033[0;37;40m")
 		remove_folder()
 		exit(1)
 	
@@ -457,13 +468,14 @@ def get_audio(video_filename):
 	try:
 		video = VideoFileClip(video_filename)
 	except:
-		print("[!] Error: File not found (" + video_filename + ")!")
+		print("\033[1;31;40m[!] Error: File not found (" + video_filename + ")!\033[0;37;40m")
 		remove_folder()
 		exit(1)
 	audio = video.audio
 	
+	# TODO: esto de los modos se deja o no ¿?
 	audio_filename = './' + FOLDER_NAME + '/audio_mode1.wav'
-	audio.write_audiofile(audio_filename, codec="pcm_s16le", fps=44100, bitrate="1411k")
+	audio.write_audiofile(audio_filename, codec="pcm_s16le", fps=48000, bitrate="768k", ffmpeg_params=["-ac", "1"])
 
 	audio_filename = './' + FOLDER_NAME + '/audio_mode2.wav'
 	audio.write_audiofile(audio_filename, codec="pcm_s16le", fps=11025, bitrate="352k")
@@ -493,7 +505,7 @@ def create_folder():
 			os.makedirs(FOLDER_NAME)
 	# if not created then raise error
 	except OSError:
-		print ('[!] Error: Creating the temporal directory')
+		print ('\033[1;31;40m[!] Error: Creating the temporal directory\033[0;37;40m')
 		exit(1)
 
 def remove_folder():
@@ -534,7 +546,7 @@ def main():
 			# create the video
 			video_filename = args.video if args.video else ''
 			create_video(encoded_image_filename, encoded_audio_filename, video_filename, args.mode)
-			#remove_folder()
+			remove_folder()
 
 		elif(args.decode):
 			# we create the folder to save data
@@ -546,17 +558,17 @@ def main():
 			frame_filename = get_frame(args.video, audio_duration)
 			# get the initial pixel from the audio
 			try:
-				print("[*] Getting the initial pixel from audio using mode 1...")
+				print("\033[1;33;40m[*] Getting the initial pixel from audio using mode 1...\033[0;37;40m")
 				initial_pixel = decode_audio_mode1(audio_filename)
 			except:
-				print("[!] Something went wrong using mode 1")
-				print("[*] Getting the initial pixel from audio using mode 2...")
+				print("\033[1;31;40m[!] Something went wrong using mode 1\033[0;37;40m")
+				print("\033[1;33;40m[*] Getting the initial pixel from audio using mode 2...\033[0;37;40m")
 				initial_pixel = decode_audio_mode2(audio_filename)
 			# get the message from the image
 			decode_image(frame_filename, initial_pixel, password)
 			remove_folder()
 	except Exception as e:
-		print("[!] Something went wrong!")
+		print("\033[1;31;40m[!] Something went wrong!\033[0;37;40m")
 		traceback.print_exc()
 		remove_folder()
 
