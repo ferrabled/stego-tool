@@ -1,5 +1,7 @@
 # stego-tool
 
+Steganography tool that allows to hide a message (password protected) in a video, using an image and an audio.
+
 ## Installation
 
 1. Clone this repository:
